@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>All Tasks</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>All Tasks</h1>
+
+<!-- Form to Create a New Task -->
+<div class="form-container">
+    <h2>Create New Task</h2>
+    <form th:action="@{/web/tasks}" method="post">
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description" required /><br><br>
+
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+        </select><br><br>
+
+        <label for="dueDate">Due Date:</label>
+        <input type="datetime-local" id="dueDate" name="dueDate" required /><br><br>
+
+        <label for="staffId">Assign to Staff:</label>
+        <select id="staffId" name="staffId" required>
+            <option th:each="staff : ${staffList}"
+                    th:value="${staff.id}"
+                    th:text="${staff.firstName + ' ' + staff.lastName + ' (' + staff.role + ')'}">
+            </option>
+        </select><br><br>
+
+        <button type="submit">Create Task</button>
+    </form>
+</div>
+
+<!-- Existing Tasks Table -->
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Assigned Staff</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="task : ${tasks}">
+        <td th:text="${task.id}"></td>
+        <td th:text="${task.description}"></td>
+        <td th:text="${task.status}"></td>
+        <td th:text="${task.dueDate}"></td>
+        <td>
+            <a th:href="@{/web/tasks/staff/{id}(id=${task.assignedStaff.id})}"
+               th:text="${task.assignedStaff.firstName + ' ' + task.assignedStaff.lastName}">
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<h2>Staff Members</h2>
+<ul>
+    <li th:each="staff : ${staffList}">
+        <a th:href="@{/web/tasks/staff/{id}(id=${staff.id})}"
+           th:text="${staff.firstName + ' ' + staff.lastName + ' (' + staff.role + ')'}">
+        </a>
+    </li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tasks for Staff</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h1>Tasks for <span th:text="${staff.firstName + ' ' + staff.lastName}"></span></h1>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="task : ${tasks}">
+        <td th:text="${task.id}"></td>
+        <td th:text="${task.description}"></td>
+        <td th:text="${task.status}"></td>
+        <td th:text="${task.dueDate}"></td>
+        <td>
+            <form th:action="@{/web/tasks/update/{id}(id=${task.id})}" method="post">
+                <select name="status">
+                    <option value="pending" th:selected="${task.status == 'pending'}">Pending</option>
+                    <option value="in_progress" th:selected="${task.status == 'in_progress'}">In Progress</option>
+                    <option value="completed" th:selected="${task.status == 'completed'}">Completed</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<a href="/web/tasks">Back to All Tasks</a>
+</body>
+</html>
