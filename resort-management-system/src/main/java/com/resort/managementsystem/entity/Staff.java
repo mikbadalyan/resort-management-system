@@ -1,7 +1,8 @@
 package com.resort.managementsystem.entity;
 
 import jakarta.persistence.*;
-import java.util.List;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "staff")
@@ -10,19 +11,19 @@ public class Staff {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @NotBlank(message = "First name is required")
     private String firstName;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email should be valid")
+    @Column(unique = true)
     private String email;
 
-    private String role; // e.g., "manager", "housekeeping", "receptionist"
-
-    @OneToMany(mappedBy = "assignedStaff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Task> tasks;
+    @NotBlank(message = "Role is required")
+    private String role;
 
     // Constructors
     public Staff() {}
@@ -73,13 +74,5 @@ public class Staff {
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    public List<Task> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
     }
 }

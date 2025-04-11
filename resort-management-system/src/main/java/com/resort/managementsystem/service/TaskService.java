@@ -7,7 +7,9 @@ import com.resort.managementsystem.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -35,6 +37,26 @@ public class TaskService {
 
     public List<Task> getTasksByStaffId(Long staffId) {
         return taskRepository.findByAssignedStaffId(staffId);
+    }
+
+    public List<Task> filterTasks(String status, Long staffId, LocalDateTime dueDate) {
+        List<Task> tasks = taskRepository.findAllWithAssignedStaff();
+        if (status != null && !status.isEmpty()) {
+            tasks = tasks.stream()
+                    .filter(task -> task.getStatus().equalsIgnoreCase(status))
+                    .collect(Collectors.toList());
+        }
+        if (staffId != null) {
+            tasks = tasks.stream()
+                    .filter(task -> task.getAssignedStaff().getId().equals(staffId))
+                    .collect(Collectors.toList());
+        }
+        if (dueDate != null) {
+            tasks = tasks.stream()
+                    .filter(task -> task.getDueDate().toLocalDate().equals(dueDate.toLocalDate()))
+                    .collect(Collectors.toList());
+        }
+        return tasks;
     }
 
     public Task updateTask(Long id, Task task) {

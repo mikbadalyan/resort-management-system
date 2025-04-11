@@ -9,27 +9,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/staff")
+@RequestMapping("/api/staff")
 public class StaffController {
     @Autowired
     private StaffService staffService;
 
-    @PostMapping
-    public ResponseEntity<Staff> createStaff(@RequestBody Staff staff) {
-        Staff createdStaff = staffService.saveStaff(staff);
-        return ResponseEntity.ok(createdStaff);
-    }
-
     @GetMapping
-    public ResponseEntity<List<Staff>> getAllStaff() {
-        List<Staff> staffList = staffService.getAllStaff();
-        return ResponseEntity.ok(staffList);
+    public List<Staff> getAllStaff() {
+        return staffService.getAllStaff();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Staff> getStaffById(@PathVariable Long id) {
         Staff staff = staffService.getStaffById(id);
         return ResponseEntity.ok(staff);
+    }
+
+    @PostMapping
+    public ResponseEntity<Staff> createStaff(@RequestBody Staff staff) {
+        Staff createdStaff = staffService.saveStaff(staff);
+        return ResponseEntity.ok(createdStaff);
     }
 
     @PutMapping("/{id}")

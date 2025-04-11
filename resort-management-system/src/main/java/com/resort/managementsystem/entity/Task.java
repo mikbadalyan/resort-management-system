@@ -1,25 +1,28 @@
 package com.resort.managementsystem.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotBlank;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "task")
+@Table(name = "tasks")
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Description is required")
     private String description;
 
-    @Column(nullable = false)
-    private String status; // e.g., "pending", "in_progress", "completed"
+    private String status;
 
+    @Future(message = "Due date must be in the future")
     private LocalDateTime dueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "staff_id", nullable = false)
+    @JoinColumn(name = "staff_id")
     private Staff assignedStaff;
 
     // Constructors
