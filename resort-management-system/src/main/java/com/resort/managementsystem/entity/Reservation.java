@@ -20,6 +20,9 @@ public class Reservation {
     @Column(nullable = false)
     private Double totalCost;
 
+    @Column(nullable = false)
+    private Double discount = 0.0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "guest_id", nullable = false)
     private Guest guest;
@@ -27,6 +30,12 @@ public class Reservation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_id")
+    private Staff staff; // Added to track which staff handled the reservation
+
+    private String bookingSource;
 
     // Constructors
     public Reservation() {
@@ -65,6 +74,14 @@ public class Reservation {
         this.totalCost = totalCost;
     }
 
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
     public Guest getGuest() {
         return guest;
     }
@@ -81,12 +98,30 @@ public class Reservation {
         this.room = room;
     }
 
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public String getBookingSource() {
+        return bookingSource;
+    }
+
+    public void setBookingSource(String bookingSource) {
+        this.bookingSource = bookingSource;
+    }
+
     public void calculateTotalCost() {
         if (room != null && room.getRate() != null && checkInDate != null && checkOutDate != null) {
             long days = java.time.temporal.ChronoUnit.DAYS.between(checkInDate, checkOutDate);
-            this.totalCost = room.getRate() * days;
+            double baseCost = room.getRate() * days;
+            // Apply discount and tax from Settings (assumes tax is applied)
+            this.totalCost = baseCost * (1.0 - (discount != null ? discount : 0.0));
         } else {
-            this.totalCost = 0.0; // Default to 0 if calculation can't be performed
+            this.totalCost = 0.0;
         }
     }
 }

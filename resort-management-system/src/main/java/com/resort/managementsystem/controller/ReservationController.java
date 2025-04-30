@@ -84,6 +84,15 @@ public class ReservationController {
             return "reservations/create";
         }
 
+        // Validate discount
+        Double discount = reservation.getDiscount();
+        if (discount != null && (discount < 0.0 || discount > 1.0)) {
+            model.addAttribute("errorMessage", "Discount must be between 0% and 100% (0.0 to 1.0)");
+            model.addAttribute("guests", guestService.getAllGuests());
+            model.addAttribute("rooms", roomService.getAllRooms());
+            return "reservations/create";
+        }
+
         if (result.hasErrors()) {
             model.addAttribute("guests", guestService.getAllGuests());
             model.addAttribute("rooms", roomService.getAllRooms());
@@ -132,6 +141,15 @@ public class ReservationController {
             Room room = roomService.getRoomById(roomId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid room ID: " + roomId));
             reservation.setRoom(room);
+        }
+
+        // Validate discount
+        Double discount = reservation.getDiscount();
+        if (discount != null && (discount < 0.0 || discount > 1.0)) {
+            model.addAttribute("errorMessage", "Discount must be between 0% and 100% (0.0 to 1.0)");
+            model.addAttribute("guests", guestService.getAllGuests());
+            model.addAttribute("rooms", roomService.getAllRooms());
+            return "reservations/edit";
         }
 
         if (result.hasErrors()) {

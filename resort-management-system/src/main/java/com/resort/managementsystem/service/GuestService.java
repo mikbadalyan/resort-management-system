@@ -37,4 +37,11 @@ public class GuestService {
                 PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "totalStays"))
         ).getContent();
     }
+
+    public List<Guest> searchGuests(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return getAllGuests();
+        }
+        return guestRepository.searchGuests(query);
+    }
 }

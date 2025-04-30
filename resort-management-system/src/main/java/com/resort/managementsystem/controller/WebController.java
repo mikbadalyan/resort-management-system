@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.List; // Add this import
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/web")
@@ -23,42 +24,29 @@ public class WebController {
     @Autowired
     private StaffService staffService;
 
-    @GetMapping("/tasks")
-    public String listTasks(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) Long staffId,
-            @RequestParam(required = false) LocalDateTime dueDate,
+    // Staff Management
+    @GetMapping("/staff")
+    public String listStaff(
+            @RequestParam(required = false) String searchQuery,
             Model model
     ) {
-        List<Task> tasks;
-        if (status != null || staffId != null || dueDate != null) {
-            tasks = taskService.filterTasks(status, staffId, dueDate);
+        List<Staff> staffList;
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            staffList = staffService.getAllStaff().stream()
+                    .filter(staff ->
+                            staff.getFirstName().toLowerCase().contains(searchQuery.toLowerCase()) ||
+                                    staff.getLastName().toLowerCase().contains(searchQuery.toLowerCase()) ||
+                                    staff.getEmail().toLowerCase().contains(searchQuery.toLowerCase()) ||
+                                    staff.getRole().toLowerCase().contains(searchQuery.toLowerCase())
+                    )
+                    .collect(Collectors.toList());
         } else {
-            tasks = taskService.getAllTasks();
+            staffList = staffService.getAllStaff();
         }
-        model.addAttribute("tasks", tasks);
-        model.addAttribute("staffList", staffService.getAllStaff());
+        model.addAttribute("staffList", staffList);
         model.addAttribute("staff", new Staff());
-        model.addAttribute("task", new Task());
-        return "tasks";
-    }
-
-    @PostMapping("/tasks")
-    public String createTask(
-            @Valid @ModelAttribute("task") Task task,
-            BindingResult result,
-            @RequestParam Long staffId,
-            Model model
-    ) {
-        if (result.hasErrors()) {
-            model.addAttribute("tasks", taskService.getAllTasks());
-            model.addAttribute("staffList", staffService.getAllStaff());
-            model.addAttribute("staff", new Staff());
-            return "tasks";
-        }
-        task.setAssignedStaff(staffService.getStaffById(staffId));
-        taskService.createTask(task, staffId);
-        return "redirect:/web/tasks";
+        model.addAttribute("searchQuery", searchQuery);
+        return "staff";
     }
 
     @PostMapping("/staff")
@@ -68,21 +56,17 @@ public class WebController {
             Model model
     ) {
         if (result.hasErrors()) {
-            model.addAttribute("tasks", taskService.getAllTasks());
             model.addAttribute("staffList", staffService.getAllStaff());
-            model.addAttribute("task", new Task());
-            return "tasks";
+            return "staff";
         }
         try {
             staffService.saveStaff(staff);
         } catch (IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("tasks", taskService.getAllTasks());
             model.addAttribute("staffList", staffService.getAllStaff());
-            model.addAttribute("task", new Task());
-            return "tasks";
+            return "staff";
         }
-        return "redirect:/web/tasks";
+        return "redirect:/web/staff";
     }
 
     @GetMapping("/staff/edit/{id}")
@@ -111,12 +95,60 @@ public class WebController {
             staff.setId(id);
             return "edit-staff";
         }
-        return "redirect:/web/tasks";
+        return "redirect:/web/staff";
     }
 
     @PostMapping("/staff/delete/{id}")
     public String deleteStaff(@PathVariable Long id) {
         staffService.deleteStaff(id);
+        return "redirect:/web/staff";
+    }
+
+    // Task Management
+    @GetMapping("/tasks")
+    public String listTasks(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long staffId,
+            @RequestParam(required = false) LocalDateTime dueDate,
+            @RequestParam(required = false) String searchQuery,
+            Model model
+    ) {
+        List<Task> tasks;
+        if (status != null || staffId != null || dueDate != null || (searchQuery != null && !searchQuery.trim().isEmpty())) {
+            tasks = taskService.filterTasks(status, staffId, dueDate);
+            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+                String query = searchQuery.toLowerCase();
+                tasks = tasks.stream()
+                        .filter(task ->
+                                task.getDescription().toLowerCase().contains(query) ||
+                                        task.getStatus().toLowerCase().contains(query)
+                        )
+                        .collect(Collectors.toList());
+            }
+        } else {
+            tasks = taskService.getAllTasks();
+        }
+        model.addAttribute("tasks", tasks);
+        model.addAttribute("staffList", staffService.getAllStaff());
+        model.addAttribute("task", new Task());
+        model.addAttribute("searchQuery", searchQuery);
+        return "tasks";
+    }
+
+    @PostMapping("/tasks")
+    public String createTask(
+            @Valid @ModelAttribute("task") Task task,
+            BindingResult result,
+            @RequestParam Long staffId,
+            Model model
+    ) {
+        if (result.hasErrors()) {
+            model.addAttribute("tasks", taskService.getAllTasks());
+            model.addAttribute("staffList", staffService.getAllStaff());
+            return "tasks";
+        }
+        task.setAssignedStaff(staffService.getStaffById(staffId));
+        taskService.createTask(task, staffId);
         return "redirect:/web/tasks";
     }
 
